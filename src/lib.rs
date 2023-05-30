@@ -1,3 +1,5 @@
+use std::net::TcpListener;
+
 use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 
 async fn health_check(_req: HttpRequest) -> impl Responder {
@@ -7,24 +9,12 @@ async fn _greet(req: HttpRequest) -> impl Responder {
     let name = req.match_info().get("name").unwrap_or("World");
     format!("Hello {}!", &name)
 }
-// pub async fn run() -> std::io::Result<()> {
-//     HttpServer::new(|| {
-//         App::new()
-//             // .route("/", web::get().to(greet))
-//             // .route("/{name}", web::get().to(greet))
-//             .route("/health_check", web::get().to(health_check))
-//     })
-//     .bind("127.0.0.1:8000")?
-//     .run()
-//     .await
-// }
 // Notice the different signature!
 // We return `Server` on the happy path and we dropped the `async` keyword
 // We have no .await call, so it is not needed anymore.
-pub fn run() -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
     let server = HttpServer::new(|| App::new().route("/health_check", web::get().to(health_check)))
-        .bind("127.0.0.1:8000")?
+        .listen(listener)?
         .run();
-    // No .await here!
     Ok(server)
 }
